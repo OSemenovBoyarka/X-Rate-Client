@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:money/money.dart';
 import 'package:x_rate_monitor/data.dart';
 
 void main() => runApp(MyApp());
@@ -26,13 +27,18 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   TextEditingController _baseAmountController;
   CurrencyRate _currencyRate;
+  double _currentBaseAmount;
 
   @override
   void initState() {
     // TODO add async data init
     _currencyRate = getRates();
+    // default amount is 1.00
+    _currentBaseAmount = 1.00;
 
-    _baseAmountController = TextEditingController(text: "1,00");
+    // TODO add currency formatter
+    _baseAmountController =
+        TextEditingController(text: _currentBaseAmount.toString());
     super.initState();
   }
 
@@ -49,7 +55,7 @@ class _HomePageState extends State<HomePage> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: <Widget>[
                     DropdownButton<String>(
-                      value: _currencyRate.baseCurrency,
+                      value: _currencyRate.baseCurrency.code,
                       // TODO more items
                       items: ["USD", "EUR"].map((currency) {
                         return DropdownMenuItem(
@@ -61,7 +67,8 @@ class _HomePageState extends State<HomePage> {
                         setState(() {
                           // fetch new data from network
                           // TODO cancel previous downloads
-                          _currencyRate = getRates(baseCurrency: value);
+                          _currencyRate =
+                              getRates(baseCurrency: Currency(value));
                         });
                         print("Currency selected: $value");
                       },
@@ -81,6 +88,18 @@ class _HomePageState extends State<HomePage> {
                           WhitelistingTextInputFormatter(
                               RegExp("^[0-9]+[\.,]?[0-9]*\$"))
                         ],
+                        onChanged: (value) {
+                          setState(() {
+                            if (value.isEmpty) {
+                              _currentBaseAmount = 0.0;
+                            } else {
+                              // TODO improve input formatting
+                              _currentBaseAmount = double.tryParse(
+                                  value.replaceAll(",", ".")
+                              );
+                            }
+                          });
+                        },
                       ),
                     )),
                   ],
@@ -91,9 +110,26 @@ class _HomePageState extends State<HomePage> {
                 itemCount: _currencyRate.rates.length,
                 itemBuilder: (context, itemIndex) {
                   final item = _currencyRate.rates[itemIndex];
+                  final convertedAmount = _currentBaseAmount * item.rate;
+                  final converted =
+                  Money.fromDouble(convertedAmount, item.currency);
 
-                  // TODO add fancier layout and formatting
-                  return Text("1.00 ${_currencyRate.baseCurrency} = ${item.rate} ${item.currency}");
+                  return ListTile(
+                    leading: Container(
+                      width: 64,
+                      height: 64,
+                      child: Image.asset(
+                          'icons/currency/${item.currency.code
+                              .toLowerCase()}.png',
+                          package: 'currency_icons'),
+                    ),
+                    title: Text("$converted"),
+                    subtitle: Text(
+                        "Rate: ${Money.fromDouble(
+                            1.0, _currencyRate.baseCurrency)} = ${Money
+                            .fromDouble(item.rate, item.currency)}\n${item
+                            .currency.name}"),
+                  );
                 }),
           )
         ],
