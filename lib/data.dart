@@ -1,5 +1,12 @@
-import 'package:faker/faker.dart' hide Currency;
+import 'dart:async';
+import 'dart:convert' as convert;
+
+import 'package:faker/faker.dart'
+    hide Currency;
+import 'package:http/http.dart' as http;
 import 'package:money/money.dart';
+// we use currency class from money dart
+
 
 final defaultCurrency = Currency("EUR");
 
@@ -9,7 +16,17 @@ class CurrencyRate {
   final Currency baseCurrency;
   final List<Rate> rates;
 
-  CurrencyRate(this.baseCurrency, this.rates);
+  CurrencyRate([this.baseCurrency, this.rates]);
+
+  factory CurrencyRate.fromJson(Map<String, dynamic> json) {
+    Map<String, dynamic> ratesMap = json['rates'];
+    return CurrencyRate(
+        Currency(json['base']),
+        // rates are key values like this { "USD" : 2.333 }
+        ratesMap.keys.map((currencyKey) {
+          return Rate(Currency(currencyKey), ratesMap[currencyKey]);
+        }).toList());
+  }
 }
 
 class Rate {
@@ -17,29 +34,25 @@ class Rate {
   final double rate;
 
   Rate(this.currency, this.rate);
-
-  bool operator ==(other) {
-    return (other is Rate && other.currency == currency);
-  }
-
-  @override
-  int get hashCode {
-    return currency.hashCode;
-  }
-
 }
 
-CurrencyRate getRates({Currency baseCurrency}) {
-  // TODO think of default const parameter
-  final base = baseCurrency != null ? baseCurrency : defaultCurrency;
-  // TODO api call
-  return CurrencyRate(
-      base,
-      List<Rate>.generate(
-        random.integer(20, min: 0),
-            (index) =>
-            Rate(Currency(faker.currency.code()),
-                random.decimal(scale: 2, min: 0.1)),
-      ).toSet().toList() // Remove duplicates from list
-  );
+//region Http calls
+const _baseUrl = "https://api.exchangeratesapi.io";
+
+Future<CurrencyRate> getRates({Currency baseCurrency}) {
+  String url = "$_baseUrl/latest";
+  // add base code as param if we have so
+  if (baseCurrency != null) {
+    url += "?base=${baseCurrency.code}";
+  }
+
+  return http.get(url).then((response) {
+    // check for successful codes
+    if (response.statusCode / 100 == 2) {
+      // parse response
+      final jsonResponse = convert.jsonDecode(response.body);
+      return CurrencyRate.fromJson(jsonResponse);
+    }
+  });
 }
+//endregion

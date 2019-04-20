@@ -26,6 +26,7 @@ dependencies:
   money: ^0.2.1
   faker: ^1.0.1
   currency_icons: ^0.0.2
+  http: 0.12.0
 
 dev_dependencies:
   flutter_test:
