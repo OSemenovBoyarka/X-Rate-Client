@@ -50,20 +50,26 @@ class _HomePageState extends State<HomePage> {
           future: _currencyRateFuture,
           builder: (context, snapshot) {
             if (snapshot.hasError) {
+              // TODO retry button
               return Center(
                 child: Text(snapshot.error.toString()),
               );
             }
 
-            if (!snapshot.hasData) {
+            // loading state should check waiting as well to cover all cases
+            if (!snapshot.hasData ||
+                snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());
             }
 
             var data = snapshot.data;
 
-            List<Currency> availableCurrencies = data.rates.map((rate) =>
-            rate.currency).toList();
-            availableCurrencies.add(data.baseCurrency);
+            List<Currency> availableCurrencies =
+            data.rates.map((rate) => rate.currency).toList();
+            // for some currencies backend return base currency in the list and for some - doesn't
+            if (!availableCurrencies.contains(data.baseCurrency)) {
+              availableCurrencies.add(data.baseCurrency);
+            }
 
             return Column(
               children: <Widget>[
@@ -83,9 +89,8 @@ class _HomePageState extends State<HomePage> {
                                 ))
                                 .toList(),
                             onChanged: (String value) {
+                              // fetch new data from network
                               setState(() {
-                                // TODO this doesn't work - app crashes because of same data
-                                // fetch new data from network
                                 _currencyRateFuture =
                                     getRates(baseCurrency: Currency(value));
                               });

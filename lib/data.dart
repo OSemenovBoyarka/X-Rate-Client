@@ -1,12 +1,10 @@
 import 'dart:async';
 import 'dart:convert' as convert;
 
-import 'package:faker/faker.dart'
-    hide Currency;
+import 'package:faker/faker.dart' hide Currency;
 import 'package:http/http.dart' as http;
 import 'package:money/money.dart';
 // we use currency class from money dart
-
 
 final defaultCurrency = Currency("EUR");
 
@@ -20,12 +18,15 @@ class CurrencyRate {
 
   factory CurrencyRate.fromJson(Map<String, dynamic> json) {
     Map<String, dynamic> ratesMap = json['rates'];
+    var baseCurrency = json['base'];
     return CurrencyRate(
-        Currency(json['base']),
+        Currency(baseCurrency),
+        ratesMap.keys
+        // for some currencies api return base currency in the list of rates, we need to skip it
+            .where((code) => code != baseCurrency)
         // rates are key values like this { "USD" : 2.333 }
-        ratesMap.keys.map((currencyKey) {
-          return Rate(Currency(currencyKey), ratesMap[currencyKey]);
-        }).toList());
+            .map((code) => Rate(Currency(code), ratesMap[code])
+        ).toList());
   }
 }
 
