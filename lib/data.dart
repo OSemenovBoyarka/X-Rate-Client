@@ -1,14 +1,11 @@
 import 'dart:async';
 import 'dart:convert' as convert;
 
-import 'package:faker/faker.dart' hide Currency;
 import 'package:http/http.dart' as http;
 import 'package:money/money.dart';
 // we use currency class from money dart
 
 final defaultCurrency = Currency("EUR");
-
-final random = RandomGenerator();
 
 class CurrencyRate {
   final Currency baseCurrency;
