@@ -20,7 +20,6 @@ class MyApp extends StatelessWidget {
 }
 
 class HomeStateInheritedWidget extends InheritedWidget {
-
   final double baseAmount;
 
   const HomeStateInheritedWidget({this.baseAmount, Widget child})
@@ -36,7 +35,6 @@ class HomeStateInheritedWidget extends InheritedWidget {
   }
 }
 
-
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
@@ -46,6 +44,7 @@ class _HomePageState extends State<HomePage> {
   TextEditingController _baseAmountController;
   Future<CurrencyRate> _currencyRateFuture;
   double _currentBaseAmount;
+  Currency _selectedCurrency;
 
   @override
   void initState() {
@@ -63,14 +62,33 @@ class _HomePageState extends State<HomePage> {
     return HomeStateInheritedWidget(
       baseAmount: _currentBaseAmount,
       child: Scaffold(
-        appBar: AppBar(),
+        appBar: AppBar(
+          title: Text("Foreign excange rates"),
+        ),
         body: FutureBuilder<CurrencyRate>(
             future: _currencyRateFuture,
             builder: (context, snapshot) {
               if (snapshot.hasError) {
                 // TODO retry button
-                return Center(
-                  child: Text(snapshot.error.toString()),
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Text(
+                      snapshot.error.toString(),
+                      textAlign: TextAlign.center,
+                    ),
+                    RaisedButton(
+                      child: Text("Retry"),
+                      onPressed: () {
+                        // retry latest api call
+                        setState(() {
+                          _currencyRateFuture =
+                              getRates(baseCurrency: _selectedCurrency);
+                        });
+                      },
+                    )
+                  ],
                 );
               }
 
@@ -109,8 +127,9 @@ class _HomePageState extends State<HomePage> {
                               onChanged: (String value) {
                                 // fetch new data from network
                                 setState(() {
+                                  _selectedCurrency = Currency(value);
                                   _currencyRateFuture =
-                                      getRates(baseCurrency: Currency(value));
+                                      getRates(baseCurrency: _selectedCurrency);
                                 });
                                 print("Currency selected: $value");
                               },
@@ -148,15 +167,20 @@ class _HomePageState extends State<HomePage> {
                         )),
                   ),
                   Expanded(
-                    child: CurrencyRatesList(
-                        currencyRate: data
-                    ),
+                    child: CurrencyRatesList(currencyRate: data),
                   ),
                 ],
               );
             }),
       ),
     );
+  }
+}
+
+class HomeInputHeaderCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
   }
 }
 
