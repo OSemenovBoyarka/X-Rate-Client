@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:money/money.dart';
 import 'package:x_rate_monitor/data.dart';
+import 'package:x_rate_monitor/history.dart';
 
 void main() => runApp(MyApp());
 
@@ -69,7 +70,6 @@ class _HomePageState extends State<HomePage> {
             future: _currencyRateFuture,
             builder: (context, snapshot) {
               if (snapshot.hasError) {
-                // TODO retry button
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -204,6 +204,15 @@ class CurrencyRatesList extends StatelessWidget {
           final converted = Money.fromDouble(convertedAmount, item.currency);
 
           return ListTile(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) =>
+                    HistoryPage(
+                      baseCurrency: item.currency,
+                    )),
+              );
+            },
             leading: Container(
               width: 64,
               height: 64,
