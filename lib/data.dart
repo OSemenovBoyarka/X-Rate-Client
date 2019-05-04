@@ -23,32 +23,40 @@ class CurrencyRate {
   }
 }
 
-class Rate {
-  final Currency currency;
-  final double rate;
-
-  Rate(this.currency, this.rate);
-}
-
 class HistoricalRates {
   final Currency baseCurrency;
-  final Map<DateTime, List<Rate>> rates;
+  final List<HistoryRatePoint> rates;
 
   HistoricalRates(this.baseCurrency, this.rates);
 
   factory HistoricalRates.fromJson(Map<String, dynamic> json) {
     final baseCurrency = json['base'];
+    final Map<String, dynamic> ratesMap = json['rates'];
     return HistoricalRates(
       Currency(baseCurrency),
-      json['rates'].map((date, dailyRatesMap) {
+      ratesMap.entries.map((MapEntry<String, dynamic> entry) {
         // here we have map of date to list of rates for that date
-        MapEntry(
-          DateTime.parse(date),
-          _parseRates(dailyRatesMap, baseCurrency),
+        return HistoryRatePoint(
+          DateTime.parse(entry.key),
+          _parseRates(entry.value, baseCurrency),
         );
-      }),
+      }).toList(),
     );
   }
+}
+
+class HistoryRatePoint {
+  final DateTime date;
+  final List<Rate> rates;
+
+  HistoryRatePoint(this.date, this.rates);
+}
+
+class Rate {
+  final Currency currency;
+  final double rate;
+
+  Rate(this.currency, this.rate);
 }
 
 List<Rate> _parseRates(Map<String, dynamic> ratesMap, String baseCurrencyCode) {
@@ -76,13 +84,16 @@ Future<CurrencyRate> getRates({Currency baseCurrency}) {
       // parse response
       final jsonResponse = convert.jsonDecode(response.body);
       return CurrencyRate.fromJson(jsonResponse);
+    } else {
+      // TODO improve error handling
+      return Future.error("${response.statusCode}: ${response.body}");
     }
   });
 }
 
 Future<HistoricalRates> getRatesHistory(
     {Currency baseCurrency, @required DateTime from, @required DateTime to}) {
-  final paramDateFormat = DateFormat("YYYY-MM-dd");
+  final paramDateFormat = DateFormat("yyyy-MM-dd");
   final url = _baseUrl.replace(path: "history", queryParameters: {
     "base": baseCurrency != null ? baseCurrency.code : null,
     "start_at": paramDateFormat.format(from),
@@ -95,6 +106,9 @@ Future<HistoricalRates> getRatesHistory(
       // parse response
       final jsonResponse = convert.jsonDecode(response.body);
       return HistoricalRates.fromJson(jsonResponse);
+    } else {
+      // TODO improve error handling
+      return Future.error("${response.statusCode}: ${response.body}");
     }
   });
 }
