@@ -91,11 +91,17 @@ Future<CurrencyRate> getRates({Currency baseCurrency}) {
   });
 }
 
-Future<HistoricalRates> getRatesHistory(
-    {Currency baseCurrency, @required DateTime from, @required DateTime to}) {
+Future<HistoricalRates> getRatesHistory({
+  Currency baseCurrency,
+  @required List<Currency> targetCurrencies,
+  @required DateTime from,
+  @required DateTime to,
+}) {
   final paramDateFormat = DateFormat("yyyy-MM-dd");
   final url = _baseUrl.replace(path: "history", queryParameters: {
     "base": baseCurrency != null ? baseCurrency.code : null,
+    // list of currencies to check historical data against
+    "symbols": targetCurrencies.map((currency) => currency.code),
     "start_at": paramDateFormat.format(from),
     "end_at": paramDateFormat.format(to)
   });

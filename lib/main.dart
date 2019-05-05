@@ -209,7 +209,8 @@ class CurrencyRatesList extends StatelessWidget {
                 context,
                 MaterialPageRoute(builder: (context) =>
                     HistoryPage(
-                      baseCurrency: item.currency,
+                      baseCurrency: currencyRate.baseCurrency,
+                      targetCurrency: item.currency,
                     )),
               );
             },
