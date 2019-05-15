@@ -40,7 +40,8 @@ class _HistoryPageState extends State<HistoryPage> {
     _fromDate = DateTime.now().subtract(Duration(days: _historyDays));
     _toDate = DateTime.now();
 
-    _historyFuture = getRatesHistory(
+    // TODO implement DI
+    _historyFuture = ApiRepository().getRatesHistory(
       baseCurrency: _baseCurrency,
       targetCurrencies: [_targetCurrency],
       from: _fromDate,

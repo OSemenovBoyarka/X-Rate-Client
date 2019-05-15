@@ -22,27 +22,51 @@ class AppState {
 @immutable
 class RatesListState {
   final Currency baseCurrency;
-  final List<CurrencyRate> rates;
   final double baseAmount;
+  final List<RateItemState> rates;
   final bool isLoading;
   final String error;
 
   RatesListState({
     this.baseCurrency,
-    this.rates,
     this.baseAmount,
+    this.rates,
     this.isLoading,
     this.error,
   });
 
-  factory RatesListState.initial() {
+  RatesListState copyWith({
+    Currency baseCurrency,
+    double baseAmount,
+    List<RateItemState> rates,
+    bool isLoading,
+    String error,
+  }) {
     return RatesListState(
+      baseCurrency: baseCurrency ?? this.baseCurrency,
+      baseAmount: baseAmount ?? this.baseAmount,
+      rates: rates ?? this.rates,
+      isLoading: isLoading ?? this.isLoading,
+      error: error ?? this.error,
+    );
+  }
+
+  factory RatesListState.initial() {
+    return RatesListState(baseCurrency: _defaultCurrency,
         baseAmount: 0.0,
-        baseCurrency: _defaultCurrency,
-        isLoading: false,
         rates: [],
+        isLoading: false,
         error: null);
   }
+}
+
+@immutable
+class RateItemState {
+  final Rate rate;
+  final Currency baseCurrency;
+  final double targetAmount;
+
+  RateItemState({this.rate, this.baseCurrency, this.targetAmount});
 }
 
 class RatesHistoryState {}
