@@ -1,7 +1,8 @@
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:flutter/material.dart';
 import 'package:money/money.dart';
-import 'package:x_rate_monitor/data.dart';
+import 'package:x_rate_monitor/models/models.dart';
+import 'package:x_rate_monitor/repository.dart';
 
 class HistoryPage extends StatefulWidget {
   final Currency baseCurrency;
