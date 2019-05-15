@@ -1,29 +1,29 @@
 import 'package:money/money.dart';
 import 'package:x_rate_monitor/models/models.dart';
 
-class SetBaseCurrencyAction {
+class ActionSetBaseCurrency {
   final Currency baseCurrency;
 
-  SetBaseCurrencyAction(this.baseCurrency);
+  ActionSetBaseCurrency(this.baseCurrency);
 }
 
-class SetBaseAmountAction {
+class ActionSetBaseAmount {
   final double baseAmount;
 
-  SetBaseAmountAction(this.baseAmount);
+  ActionSetBaseAmount(this.baseAmount);
 }
 
-class RatesUpdatedAction {
+class ActionRatesUpdated {
   final CurrencyRate ratesResponse;
 
-  RatesUpdatedAction(this.ratesResponse);
+  ActionRatesUpdated(this.ratesResponse);
 }
 
-class RatesUpdateErrorAction {
-  // TODO think of error via enums
+class ActionRatesUpdateError {
+  // TODO think of error via enums, add error filtering
   final Object error;
 
-  RatesUpdateErrorAction(this.error);
+  ActionRatesUpdateError(this.error);
 }
 
-class RatesLoadingAction {}
+class ActionRatesLoading {}

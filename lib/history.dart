@@ -72,7 +72,7 @@ class _HistoryPageState extends State<HistoryPage> {
                   onPressed: () {
                     // retry latest api call
                     setState(() {
-                      _historyFuture = getRatesHistory(
+                      _historyFuture = ApiRepository().getRatesHistory(
                         baseCurrency: _baseCurrency,
                         targetCurrencies: [_targetCurrency],
                         from: _fromDate,

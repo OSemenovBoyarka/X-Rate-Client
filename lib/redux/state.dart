@@ -23,6 +23,7 @@ class AppState {
 class RatesListState {
   final Currency baseCurrency;
   final double baseAmount;
+  final List<Currency> availableCurrencies;
   final List<RateItemState> rates;
   final bool isLoading;
   final String error;
@@ -30,6 +31,7 @@ class RatesListState {
   RatesListState({
     this.baseCurrency,
     this.baseAmount,
+    this.availableCurrencies,
     this.rates,
     this.isLoading,
     this.error,
@@ -38,6 +40,7 @@ class RatesListState {
   RatesListState copyWith({
     Currency baseCurrency,
     double baseAmount,
+    List<Currency> availableCurrencies,
     List<RateItemState> rates,
     bool isLoading,
     String error,
@@ -45,6 +48,7 @@ class RatesListState {
     return RatesListState(
       baseCurrency: baseCurrency ?? this.baseCurrency,
       baseAmount: baseAmount ?? this.baseAmount,
+      availableCurrencies: availableCurrencies ?? this.availableCurrencies,
       rates: rates ?? this.rates,
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
@@ -52,11 +56,14 @@ class RatesListState {
   }
 
   factory RatesListState.initial() {
-    return RatesListState(baseCurrency: _defaultCurrency,
-        baseAmount: 0.0,
-        rates: [],
-        isLoading: false,
-        error: null);
+    return RatesListState(
+      baseCurrency: _defaultCurrency,
+      baseAmount: 0.0,
+      availableCurrencies: [_defaultCurrency],
+      rates: [],
+      isLoading: false,
+      error: null,
+    );
   }
 }
 
