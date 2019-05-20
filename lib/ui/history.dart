@@ -1,62 +1,52 @@
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:flutter/material.dart';
 import 'package:money/money.dart';
-import 'package:x_rate_monitor/models/models.dart';
-import 'package:x_rate_monitor/repository.dart';
+import 'package:x_rate_monitor/bloc/bloc_provider.dart';
+import 'package:x_rate_monitor/bloc/history_bloc.dart';
+import 'package:x_rate_monitor/bloc/history_events.dart';
+import 'package:x_rate_monitor/model/models.dart';
+import 'package:x_rate_monitor/model/repository.dart';
 
-class HistoryPage extends StatefulWidget {
+class HistoryPage extends StatelessWidget {
   final Currency baseCurrency;
   final Currency targetCurrency;
-
-  const HistoryPage({Key key, this.baseCurrency, this.targetCurrency})
-      : super(key: key);
-
-  @override
-  _HistoryPageState createState() {
-    return _HistoryPageState(baseCurrency, targetCurrency);
-  }
-}
-
-class _HistoryPageState extends State<HistoryPage> {
-  // specifies initial number of points to display
-  final _initialDataSize = 10;
 
   // days to pick data
   // TODO make days configurable from UI
   final _historyDays = 180;
 
-  Currency _baseCurrency;
-  Currency _targetCurrency;
-  Future<HistoricalRates> _historyFuture;
+  // specifies initial number of points to display
+  final _initialDataSize = 10;
 
-  DateTime _fromDate;
-  DateTime _toDate;
-
-  _HistoryPageState(this._baseCurrency, this._targetCurrency);
-
-  @override
-  void initState() {
-    super.initState();
-    _fromDate = DateTime.now().subtract(Duration(days: _historyDays));
-    _toDate = DateTime.now();
-
-    // TODO implement DI
-    _historyFuture = ApiRepository().getRatesHistory(
-      baseCurrency: _baseCurrency,
-      targetCurrencies: [_targetCurrency],
-      from: _fromDate,
-      to: _toDate,
-    );
-  }
+  const HistoryPage({
+    Key key,
+    @required this.baseCurrency,
+    @required this.targetCurrency,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    return BlocProvider<HistoryBloc>(
+      bloc: HistoryBloc(ApiRepository()),
+      child: _buildPage(context),
+    );
+  }
+
+  Widget _buildPage(BuildContext context) {
+    // load initial data
+    BlocProvider
+        .of<HistoryBloc>(context)
+        .input
+        .add(GetHistoryEvent(baseCurrency, [targetCurrency], _historyDays));
+
     return Scaffold(
       appBar: AppBar(
-        title: Text("${_baseCurrency.name} to ${_targetCurrency.name}"),
+        title: Text("${baseCurrency.name} to ${targetCurrency.name}"),
       ),
-      body: FutureBuilder(
-        future: _historyFuture,
+      body: StreamBuilder(
+        stream: BlocProvider
+            .of<HistoryBloc>(context)
+            .output,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Column(
@@ -71,14 +61,10 @@ class _HistoryPageState extends State<HistoryPage> {
                   child: Text("Retry"),
                   onPressed: () {
                     // retry latest api call
-                    setState(() {
-                      _historyFuture = ApiRepository().getRatesHistory(
-                        baseCurrency: _baseCurrency,
-                        targetCurrencies: [_targetCurrency],
-                        from: _fromDate,
-                        to: _toDate,
-                      );
-                    });
+                    BlocProvider
+                        .of<HistoryBloc>(context)
+                        .input
+                        .add(GetHistoryEvent(baseCurrency, [targetCurrency], _historyDays));
                   },
                 )
               ],
@@ -86,8 +72,7 @@ class _HistoryPageState extends State<HistoryPage> {
           }
 
           // loading state should check waiting as well to cover all cases
-          if (!snapshot.hasData ||
-              snapshot.connectionState == ConnectionState.waiting) {
+          if (!snapshot.hasData || snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           }
 
@@ -103,15 +88,12 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 
-  charts.TimeSeriesChart _buildHistoryChartChart(
-      HistoricalRates ratesResponse) {
+  charts.TimeSeriesChart _buildHistoryChartChart(HistoricalRates ratesResponse) {
     // rates should be sorted by date ascending
     List<HistoryRatePoint> rates = ratesResponse.rates;
     rates.sort((a, b) => a.date.compareTo(b.date));
 
-    final dateStart = rates.length <= _initialDataSize
-        ? rates.first.date
-        : rates[rates.length - _initialDataSize].date;
+    final dateStart = rates.length <= _initialDataSize ? rates.first.date : rates[rates.length - _initialDataSize].date;
     final dateEnd = rates.last.date;
 
     final seriesList = _createListData(rates);
@@ -143,20 +125,16 @@ class _HistoryPageState extends State<HistoryPage> {
           charts.PanAndZoomBehavior(),
           // this behavior allows user
           charts.LinePointHighlighter(
-              showHorizontalFollowLine:
-              charts.LinePointHighlighterFollowLineType.nearest,
-              showVerticalFollowLine:
-              charts.LinePointHighlighterFollowLineType.nearest),
-          charts.ChartTitle("${_baseCurrency.code} to ${_targetCurrency
-              .code} rate for last $_historyDays days.",
+              showHorizontalFollowLine: charts.LinePointHighlighterFollowLineType.nearest,
+              showVerticalFollowLine: charts.LinePointHighlighterFollowLineType.nearest),
+          charts.ChartTitle("${baseCurrency.code} to ${targetCurrency.code} rate for last $_historyDays days.",
               behaviorPosition: charts.BehaviorPosition.top,
               titleOutsideJustification: charts.OutsideJustification.start,
               innerPadding: 18),
         ]);
   }
 
-  static List<charts.Series<HistoryRatePoint, DateTime>> _createListData(
-      List<HistoryRatePoint> data) {
+  static List<charts.Series<HistoryRatePoint, DateTime>> _createListData(List<HistoryRatePoint> data) {
     return [
       charts.Series<HistoryRatePoint, DateTime>(
         id: 'Currency',

@@ -1,8 +1,8 @@
 import 'package:redux/redux.dart';
-import 'package:x_rate_monitor/models/models.dart';
+import 'package:x_rate_monitor/model/models.dart';
+import 'package:x_rate_monitor/model/repository.dart';
 import 'package:x_rate_monitor/redux/actions.dart';
 import 'package:x_rate_monitor/redux/state.dart';
-import 'package:x_rate_monitor/repository.dart';
 
 List<Middleware<AppState>> createMiddleware(Repository repository) =>
     [

@@ -1,6 +1,6 @@
 import 'package:meta/meta.dart';
 import 'package:money/money.dart';
-import 'package:x_rate_monitor/models/models.dart';
+import 'package:x_rate_monitor/model/models.dart';
 
 final _defaultCurrency = Currency("EUR");
 

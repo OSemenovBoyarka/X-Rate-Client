@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:meta/meta.dart';
 import 'package:money/money.dart';
-import 'package:x_rate_monitor/models/models.dart';
+import 'package:x_rate_monitor/model/models.dart';
 
 abstract class Repository {
   Future<CurrencyRate> getRates({Currency baseCurrency});

@@ -1,7 +1,7 @@
 import 'package:redux/redux.dart';
+import 'package:x_rate_monitor/model/repository.dart';
 import 'package:x_rate_monitor/redux/middleware.dart';
 import 'package:x_rate_monitor/redux/state.dart';
-import 'package:x_rate_monitor/repository.dart';
 
 import 'reducers.dart';
 

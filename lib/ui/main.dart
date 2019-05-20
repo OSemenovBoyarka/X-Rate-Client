@@ -3,10 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:money/money.dart';
 import 'package:redux/redux.dart';
-import 'package:x_rate_monitor/history.dart';
 import 'package:x_rate_monitor/redux/actions.dart';
 import 'package:x_rate_monitor/redux/state.dart';
 import 'package:x_rate_monitor/redux/store.dart';
+import 'package:x_rate_monitor/ui/history.dart';
 
 void main() => runApp(MyApp());
 

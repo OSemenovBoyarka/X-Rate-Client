@@ -1,29 +1,29 @@
 import 'package:money/money.dart';
-import 'package:x_rate_monitor/models/models.dart';
+import 'package:x_rate_monitor/model/models.dart';
 
 class ActionSetBaseCurrency {
   final Currency baseCurrency;
 
-  ActionSetBaseCurrency(this.baseCurrency);
+  const ActionSetBaseCurrency(this.baseCurrency);
 }
 
 class ActionSetBaseAmount {
   final double baseAmount;
 
-  ActionSetBaseAmount(this.baseAmount);
+  const ActionSetBaseAmount(this.baseAmount);
 }
 
 class ActionRatesUpdated {
   final CurrencyRate ratesResponse;
 
-  ActionRatesUpdated(this.ratesResponse);
+  const ActionRatesUpdated(this.ratesResponse);
 }
 
 class ActionRatesUpdateError {
   // TODO think of error via enums, add error filtering
   final Object error;
 
-  ActionRatesUpdateError(this.error);
+  const ActionRatesUpdateError(this.error);
 }
 
 class ActionRatesLoading {}
