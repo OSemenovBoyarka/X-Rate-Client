@@ -12,11 +12,10 @@ class HistoryPage extends StatelessWidget {
   final Currency targetCurrency;
 
   // days to pick data
-  // TODO make days configurable from UI
   final _historyDays = 180;
 
   // specifies initial number of points to display
-  final _initialDataSize = 10;
+//  final _initialDataSize = 10; see comments below
 
   const HistoryPage({
     Key key,
@@ -27,9 +26,9 @@ class HistoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<HistoryBloc>(
-      bloc: HistoryBloc(ApiRepository()),
-      child: _buildPage(context),
-    );
+        bloc: HistoryBloc(ApiRepository()),
+        // builder required to be able search ancestors
+        child: Builder(builder: (context) => _buildPage(context)));
   }
 
   Widget _buildPage(BuildContext context) {
@@ -64,7 +63,8 @@ class HistoryPage extends StatelessWidget {
                     BlocProvider
                         .of<HistoryBloc>(context)
                         .input
-                        .add(GetHistoryEvent(baseCurrency, [targetCurrency], _historyDays));
+                        .add(GetHistoryEvent(
+                        baseCurrency, [targetCurrency], _historyDays));
                   },
                 )
               ],
@@ -72,7 +72,8 @@ class HistoryPage extends StatelessWidget {
           }
 
           // loading state should check waiting as well to cover all cases
-          if (!snapshot.hasData || snapshot.connectionState == ConnectionState.waiting) {
+          if (!snapshot.hasData ||
+              snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           }
 
@@ -88,13 +89,17 @@ class HistoryPage extends StatelessWidget {
     );
   }
 
-  charts.TimeSeriesChart _buildHistoryChartChart(HistoricalRates ratesResponse) {
+  charts.TimeSeriesChart _buildHistoryChartChart(
+      HistoricalRates ratesResponse) {
     // rates should be sorted by date ascending
     List<HistoryRatePoint> rates = ratesResponse.rates;
     rates.sort((a, b) => a.date.compareTo(b.date));
 
-    final dateStart = rates.length <= _initialDataSize ? rates.first.date : rates[rates.length - _initialDataSize].date;
-    final dateEnd = rates.last.date;
+    // See comment below
+//    final dateStart = rates.length <= _initialDataSize
+//        ? rates.first.date
+//        : rates[rates.length - _initialDataSize].date;
+//    final dateEnd = rates.last.date;
 
     final seriesList = _createListData(rates);
     return charts.TimeSeriesChart(seriesList,
@@ -125,16 +130,20 @@ class HistoryPage extends StatelessWidget {
           charts.PanAndZoomBehavior(),
           // this behavior allows user
           charts.LinePointHighlighter(
-              showHorizontalFollowLine: charts.LinePointHighlighterFollowLineType.nearest,
-              showVerticalFollowLine: charts.LinePointHighlighterFollowLineType.nearest),
-          charts.ChartTitle("${baseCurrency.code} to ${targetCurrency.code} rate for last $_historyDays days.",
+              showHorizontalFollowLine: charts
+                  .LinePointHighlighterFollowLineType.nearest,
+              showVerticalFollowLine: charts.LinePointHighlighterFollowLineType
+                  .nearest),
+          charts.ChartTitle("${baseCurrency.code} to ${targetCurrency
+              .code} rate for last $_historyDays days.",
               behaviorPosition: charts.BehaviorPosition.top,
               titleOutsideJustification: charts.OutsideJustification.start,
               innerPadding: 18),
         ]);
   }
 
-  static List<charts.Series<HistoryRatePoint, DateTime>> _createListData(List<HistoryRatePoint> data) {
+  static List<charts.Series<HistoryRatePoint, DateTime>> _createListData(
+      List<HistoryRatePoint> data) {
     return [
       charts.Series<HistoryRatePoint, DateTime>(
         id: 'Currency',
