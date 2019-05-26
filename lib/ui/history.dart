@@ -42,55 +42,68 @@ class HistoryPage extends StatelessWidget {
       appBar: AppBar(
         title: Text("${baseCurrency.name} to ${targetCurrency.name}"),
       ),
-      body: StreamBuilder(
-        stream: BlocProvider
-            .of<HistoryBloc>(context)
-            .output,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Text(
-                  snapshot.error.toString(),
-                  textAlign: TextAlign.center,
-                ),
-                RaisedButton(
-                  child: Text("Retry"),
-                  onPressed: () {
-                    // retry latest api call
-                    BlocProvider
-                        .of<HistoryBloc>(context)
-                        .input
-                        .add(GetHistoryEvent(
-                        baseCurrency, [targetCurrency], _historyDays));
-                  },
-                )
-              ],
-            );
-          }
-
-          // loading state should check waiting as well to cover all cases
-          if (!snapshot.hasData ||
-              snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-
-          return Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: AspectRatio(
-              child: _buildHistoryChartChart(snapshot.data),
-              aspectRatio: 1.0,
+      body: Column(
+        children: <Widget>[
+          Row(children: <Widget>[
+            Hero(
+              tag: this.targetCurrency,
+              child: Container(
+                width: 64,
+                height: 64,
+                child: Image.asset('icons/currency/${this.targetCurrency.code.toLowerCase()}.png',
+                    package: 'currency_icons'),
+              ),
             ),
-          );
-        },
+            Text("${baseCurrency.code} to ${targetCurrency.code} rate for last $_historyDays days."),
+          ]),
+          StreamBuilder(
+            stream: BlocProvider
+                .of<HistoryBloc>(context)
+                .output,
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Text(
+                      snapshot.error.toString(),
+                      textAlign: TextAlign.center,
+                    ),
+                    RaisedButton(
+                      child: Text("Retry"),
+                      onPressed: () {
+                        // retry latest api call
+                        BlocProvider
+                            .of<HistoryBloc>(context)
+                            .input
+                            .add(GetHistoryEvent(baseCurrency, [targetCurrency], _historyDays));
+                      },
+                    )
+                  ],
+                );
+              }
+
+              // loading state should check waiting as well to cover all cases
+              if (!snapshot.hasData || snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
+
+              return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: AspectRatio(
+                  child: _buildHistoryChartChart(snapshot.data),
+                  aspectRatio: 1.0,
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
 
-  charts.TimeSeriesChart _buildHistoryChartChart(
-      HistoricalRates ratesResponse) {
+  charts.TimeSeriesChart _buildHistoryChartChart(HistoricalRates ratesResponse) {
     // rates should be sorted by date ascending
     List<HistoryRatePoint> rates = ratesResponse.rates;
     rates.sort((a, b) => a.date.compareTo(b.date));
@@ -128,22 +141,14 @@ class HistoryPage extends StatelessWidget {
 //        ),
         behaviors: [
           charts.PanAndZoomBehavior(),
-          // this behavior allows user
+          // this behavior allows user to highlight poits on the graph
           charts.LinePointHighlighter(
-              showHorizontalFollowLine: charts
-                  .LinePointHighlighterFollowLineType.nearest,
-              showVerticalFollowLine: charts.LinePointHighlighterFollowLineType
-                  .nearest),
-          charts.ChartTitle("${baseCurrency.code} to ${targetCurrency
-              .code} rate for last $_historyDays days.",
-              behaviorPosition: charts.BehaviorPosition.top,
-              titleOutsideJustification: charts.OutsideJustification.start,
-              innerPadding: 18),
+              showHorizontalFollowLine: charts.LinePointHighlighterFollowLineType.nearest,
+              showVerticalFollowLine: charts.LinePointHighlighterFollowLineType.nearest),
         ]);
   }
 
-  static List<charts.Series<HistoryRatePoint, DateTime>> _createListData(
-      List<HistoryRatePoint> data) {
+  static List<charts.Series<HistoryRatePoint, DateTime>> _createListData(List<HistoryRatePoint> data) {
     return [
       charts.Series<HistoryRatePoint, DateTime>(
         id: 'Currency',

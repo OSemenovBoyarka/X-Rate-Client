@@ -18,26 +18,7 @@ class HomePage extends StatelessWidget {
         converter: (store) => store.state.ratesListState,
         builder: (context, state) {
           if (state.error != null) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Text(
-                  state.error,
-                  textAlign: TextAlign.center,
-                ),
-                StoreBuilder<AppState>(
-                  builder: (context, store) =>
-                      RaisedButton(
-                        child: Text("Retry"),
-                        onPressed: () {
-                          // retry by repeating setting the model
-                          store.dispatch(ActionSetBaseCurrency(state.baseCurrency));
-                        },
-                      ),
-                )
-              ],
-            );
+            return _buildRatesLoadingError(state.error);
           }
 
           // loading state
@@ -56,6 +37,29 @@ class HomePage extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  Column _buildRatesLoadingError(String error) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        Text(
+          error,
+          textAlign: TextAlign.center,
+        ),
+        StoreBuilder<AppState>(
+          builder: (context, store) =>
+              RaisedButton(
+                child: Text("Retry"),
+                onPressed: () {
+                  // retry by repeating setting the model
+                  store.dispatch(ActionRetryLoadRates());
+                },
+              ),
+        )
+      ],
     );
   }
 
@@ -151,10 +155,13 @@ class CurrencyRatesList extends StatelessWidget {
                         )),
               );
             },
-            leading: Container(
-              width: 64,
-              height: 64,
-              child: Image.asset('icons/currency/${currency.code.toLowerCase()}.png', package: 'currency_icons'),
+            leading: Hero(
+              tag: currency,
+              child: Container(
+                width: 64,
+                height: 64,
+                child: Image.asset('icons/currency/${currency.code.toLowerCase()}.png', package: 'currency_icons'),
+              ),
             ),
             title: Text("$converted"),
             subtitle: Text(

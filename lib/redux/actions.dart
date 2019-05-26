@@ -26,4 +26,8 @@ class ActionRatesUpdateError {
   const ActionRatesUpdateError(this.error);
 }
 
+class ActionRetryLoadRates {
+  const ActionRetryLoadRates();
+}
+
 class ActionRatesLoading {}

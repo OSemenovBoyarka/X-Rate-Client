@@ -1,3 +1,4 @@
+import 'package:money/money.dart';
 import 'package:redux/redux.dart';
 import 'package:x_rate_monitor/model/models.dart';
 import 'package:x_rate_monitor/model/repository.dart';
@@ -17,20 +18,26 @@ class FetchRatesMiddleware implements MiddlewareClass<AppState> {
   @override
   void call(Store<AppState> store, action, NextDispatcher next) async {
     if (action is ActionSetBaseCurrency) {
-      // notify reducer that we are loading rates
-      next(ActionRatesLoading());
-      // perform actual load
-      try {
-        CurrencyRate result = await _repository.getRates(baseCurrency: action.baseCurrency);
-        next(ActionRatesUpdated(result));
-      } catch (e) {
-        if (e is Exception) {
-          e.toString();
-        }
-        next(ActionRatesUpdateError(e));
-      }
+      await _loadRates(next, action.baseCurrency);
+    } else if (action is ActionRetryLoadRates) {
+      await _loadRates(next, store.state.ratesListState.baseCurrency);
     } else {
       next(action);
+    }
+  }
+
+  Future _loadRates(NextDispatcher next, Currency baseCurrency) async {
+    // notify reducer that we are loading rates
+    next(ActionRatesLoading());
+    // perform actual load
+    try {
+      CurrencyRate result = await _repository.getRates(baseCurrency: baseCurrency);
+      next(ActionRatesUpdated(result));
+    } catch (e) {
+      if (e is Exception) {
+        e.toString();
+      }
+      next(ActionRatesUpdateError(e));
     }
   }
 }
