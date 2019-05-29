@@ -30,13 +30,12 @@ class ApiRepository extends Repository {
 
     return http.get(url).then((response) {
       // check for successful codes
-      if (response.statusCode / 100 == 2) {
+      if (_isSuccessful(response)) {
         // parse response
         final jsonResponse = convert.jsonDecode(response.body);
         return CurrencyRate.fromJson(jsonResponse);
       } else {
-        // TODO improve error handling
-        return Future.error("${response.statusCode}: ${response.body}");
+        return Future.error(_generateErrorMessage(response));
       }
     });
   }
@@ -58,16 +57,19 @@ class ApiRepository extends Repository {
 
     return http.get(url).then((response) {
       // check for successful codes
-      if (response.statusCode / 100 == 2) {
+      if (_isSuccessful(response)) {
         // parse response
         final jsonResponse = convert.jsonDecode(response.body);
         return HistoricalRates.fromJson(jsonResponse);
       } else {
-        // TODO improve error handling
-        return Future.error("${response.statusCode}: ${response.body}");
+        return Future.error(_generateErrorMessage(response));
       }
     });
   }
+
+  String _generateErrorMessage(http.Response response) => "${response.statusCode}: ${response.body}";
+
+  bool _isSuccessful(http.Response response) => response.statusCode / 100 == 2;
 
 }
 //endregion
