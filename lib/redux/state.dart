@@ -17,6 +17,22 @@ class AppState {
   factory AppState.initial() {
     return AppState(RatesListState.initial(), RatesHistoryState());
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is AppState &&
+              runtimeType == other.runtimeType &&
+              ratesListState == other.ratesListState &&
+              ratesHistoryState == other.ratesHistoryState;
+
+  @override
+  int get hashCode =>
+      ratesListState.hashCode ^
+      ratesHistoryState.hashCode;
+
+
+
 }
 
 @immutable
@@ -65,6 +81,27 @@ class RatesListState {
       error: null,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is RatesListState &&
+              runtimeType == other.runtimeType &&
+              baseCurrency == other.baseCurrency &&
+              baseAmount == other.baseAmount &&
+              availableCurrencies == other.availableCurrencies &&
+              rates == other.rates &&
+              isLoading == other.isLoading &&
+              error == other.error;
+
+  @override
+  int get hashCode =>
+      baseCurrency.hashCode ^
+      baseAmount.hashCode ^
+      availableCurrencies.hashCode ^
+      rates.hashCode ^
+      isLoading.hashCode ^
+      error.hashCode;
 }
 
 @immutable
@@ -74,6 +111,27 @@ class RateItemState {
   final double targetAmount;
 
   RateItemState({this.rate, this.baseCurrency, this.targetAmount});
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is RateItemState &&
+              runtimeType == other.runtimeType &&
+              rate == other.rate &&
+              baseCurrency == other.baseCurrency &&
+              targetAmount == other.targetAmount;
+
+  @override
+  int get hashCode =>
+      rate.hashCode ^
+      baseCurrency.hashCode ^
+      targetAmount.hashCode;
+
+  @override
+  String toString() {
+    return 'RateItemState{rate: $rate, baseCurrency: $baseCurrency, targetAmount: $targetAmount}';
+  }
+
 }
 
 class RatesHistoryState {}

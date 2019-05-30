@@ -5,7 +5,7 @@ import 'package:x_rate_monitor/bloc/history_bloc.dart';
 import 'package:x_rate_monitor/bloc/history_events.dart';
 import 'package:x_rate_monitor/model/repository.dart';
 
-import '../mock_network_responses.dart';
+import '../data/mock_network_responses.dart';
 
 class MockRepository extends Mock implements Repository {}
 
@@ -27,7 +27,7 @@ void main() {
   });
 
   test("network response is being returned for history reuest", () {
-    var mockedResponse = mockHistoryResponse(Currency("EUR"));
+    var mockedResponse = mockHistoryResponse(mockBaseCurrency);
     when(mockRepository.getRatesHistory(
       targetCurrencies: anyNamed("targetCurrencies"),
       baseCurrency: anyNamed("baseCurrency"),
@@ -40,11 +40,11 @@ void main() {
       emits(mockedResponse),
     );
 
-    historyBloc.input.add(GetHistoryEvent(Currency("EUR"), [Currency("USD")], 180));
+    historyBloc.input.add(GetHistoryEvent(mockBaseCurrency, [Currency("USD")], 180));
   });
 
   test("bloc calls repository with correct arguments", () async {
-    var event = GetHistoryEvent(Currency("EUR"), [Currency("USD")], 180);
+    var event = GetHistoryEvent(mockBaseCurrency, [Currency("USD")], 180);
     historyBloc.input.add(event);
 
     // wait for first output event - at this point rates history repository must be called

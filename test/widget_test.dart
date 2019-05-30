@@ -6,24 +6,33 @@
 // tree, read text, and verify that the values of widget properties are correct.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:x_rate_monitor/ui/main.dart';
+import 'package:x_rate_monitor/redux/state.dart';
+import 'package:x_rate_monitor/redux/store.dart';
+import 'package:x_rate_monitor/ui/home.dart';
+
+import 'data/mock_network_responses.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(MyApp());
+  testWidgets('RatesHistory widget happy path tests', (WidgetTester tester) async {
+    // create fake store - we will test only happy path, so we don't need actual mocking, stub repository is ok for this
+    final store = createStore(repository: StubRepository());
+    await tester.pumpWidget(StoreProvider<AppState>(
+      store: store,
+      child: MaterialApp(
+        title: 'X-Rate Monitor',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: HomePage(),
+      ),
+    ));
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // verify base currency code is displayed.
+    expect(find.text(store.state.ratesListState.baseCurrency.code), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // verify loading is not displayed - because we have stub repo - response should be instant
+    expect(find.byWidgetPredicate((widget) => widget is ProgressIndicator), findsNothing);
   });
 }

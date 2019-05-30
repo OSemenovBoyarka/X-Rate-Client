@@ -40,6 +40,22 @@ class HistoryRatePoint {
   final List<Rate> rates;
 
   HistoryRatePoint(this.date, this.rates);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is HistoryRatePoint &&
+              runtimeType == other.runtimeType &&
+              date == other.date &&
+              rates == other.rates;
+
+  @override
+  int get hashCode =>
+      date.hashCode ^
+      rates.hashCode;
+
+
+
 }
 
 class Rate {
@@ -47,6 +63,26 @@ class Rate {
   final double rate;
 
   Rate(this.currency, this.rate);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is Rate &&
+              runtimeType == other.runtimeType &&
+              currency == other.currency &&
+              rate == other.rate;
+
+  @override
+  int get hashCode =>
+      currency.hashCode ^
+      rate.hashCode;
+
+  @override
+  String toString() {
+    return 'Rate{currency: $currency, rate: $rate}';
+  }
+
+
 }
 
 List<Rate> _parseRates(Map<String, dynamic> ratesMap, String baseCurrencyCode) {
