@@ -5,6 +5,7 @@ import 'package:money/money.dart';
 import 'package:x_rate_monitor/redux/actions.dart';
 import 'package:x_rate_monitor/redux/state.dart';
 import 'package:x_rate_monitor/ui/history.dart';
+import 'package:x_rate_monitor/util/text_formatting.dart';
 
 class HomePage extends StatelessWidget {
   @override
@@ -90,19 +91,22 @@ class HomePage extends StatelessWidget {
               Expanded(
                   child: Padding(
                     padding: const EdgeInsets.only(left: 16.0),
-                    child: buildBaseAmountInput(state.baseAmount),
+                    child: buildBaseAmountInput(state.baseAmount, state.baseCurrency),
                   )),
             ],
           )),
     );
   }
 
-  Widget buildBaseAmountInput(double baseAmount) {
+  Widget buildBaseAmountInput(double baseAmount, Currency baseCurrency) {
     return StoreBuilder<AppState>(
-      builder: (context, store) =>
-          TextField(
-            // TODO improve input formatting - use text edit TextEditingController for selection and filtering
-//            controller: TextEditingController(text: baseAmount.toString()),
+      builder: (context, store) {
+        // initial text should be formatted same as in CurrencyAmountTextInputFormatter
+        // to avoid endless loop
+        var text = Money.fromDouble(baseAmount, baseCurrency).amountAsString;
+        return TextField(
+            controller: TextEditingController(text: text),
+            enableInteractiveSelection: false, // for simplicity user should not be able to change selection
             textAlign: TextAlign.end,
             keyboardType: TextInputType.numberWithOptions(
               signed: false,
@@ -110,14 +114,15 @@ class HomePage extends StatelessWidget {
             ),
             inputFormatters: [
               LengthLimitingTextInputFormatter(16),
-              WhitelistingTextInputFormatter(RegExp("^[0-9]+[\.,]?[0-9]*\$"))
+              CurrencyAmountTextInputFormatter(currency: baseCurrency)
             ],
             onChanged: (value) {
               baseAmount = value.isEmpty ? 0.0 : double.tryParse(value.replaceAll(",", "."));
               // dispatch new base amount to store
               store.dispatch(ActionSetBaseAmount(baseAmount));
             },
-          ),
+          );
+      },
     );
   }
 }

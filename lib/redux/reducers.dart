@@ -35,12 +35,14 @@ RatesListState setBaseAmountReducer(
 RatesListState ratesUpdatedReducer(RatesListState state, ActionRatesUpdated action) {
   // calculate available currencies based on network response
   List<Currency> availableCurrencies = action.ratesResponse.rates.map((rate) => rate.currency).toList();
+  Currency newBaseCurrency = action.ratesResponse.baseCurrency;
   // for some currencies backend return base currency in the list and for some - doesn't
-  if (!availableCurrencies.contains(state.baseCurrency)) {
-    availableCurrencies.add(state.baseCurrency);
+  if (!availableCurrencies.contains(newBaseCurrency)) {
+    availableCurrencies.add(newBaseCurrency);
   }
 
   return state.copyWith(
+    baseCurrency: newBaseCurrency,
     rates: action.ratesResponse.rates.map((rate) {
       return RateItemState(baseCurrency: state.baseCurrency, rate: rate, targetAmount: state.baseAmount * rate.rate);
     }).toList(),
